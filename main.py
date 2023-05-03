@@ -1,4 +1,5 @@
 import codecs
+import csv
 import json 
 import os
 
@@ -9,8 +10,8 @@ def extractMovieLinesAndConversations(file_name: str) -> tuple[dict[str, str], d
     movie_lines = dict()
     movie_conversations = dict()
 
-    with open(file_name, "r", encoding="iso-8859-1") as f:
-        for line in f:
+    with open(file_name, "r", encoding="iso-8859-1") as input_file:
+        for line in input_file:
             line_json = json.loads(line)
             
             line_object = dict()
@@ -32,12 +33,29 @@ def extractMovieLinesAndConversations(file_name: str) -> tuple[dict[str, str], d
     return movie_lines, movie_conversations
 
 
+def extractQuestionsAndAnswers(movie_conversations: dict[str, str]) -> list[list[str]]:
+    questions_and_answers = list()
+
+    for conversation in movie_conversations.values():
+        for i in range(len(conversation["lines"]) - 1):  # ignore the last line because it has no answer
+            question = conversation["lines"][i]["text"].strip()
+            answer = conversation["lines"][i+1]["text"].strip()
+            
+            if question is not None and answer is not None:
+                questions_and_answers.append([question, answer])
+
+    return questions_and_answers
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 dataset = "movie-corpus"
 processed_data_output = os.path.join(dataset, "formatted_movie_lines.txt")
 
-delimiter = '\t'
-delimiter = str(codecs.decode(delimiter, "unicode_escape"))
-
 movie_lines, movie_conversations = extractMovieLinesAndConversations(os.path.join(dataset, "utterances.jsonl"))
+
+delimiter = str(codecs.decode("\t", "unicode_escape"))
+with open(processed_data_output, "w", encoding="utf-8") as output_file:
+    writer = csv.writer(output_file, delimiter=delimiter, lineterminator="\n")
+    for pair in extractQuestionsAndAnswers(movie_conversations):
+        writer.writerow(pair)
