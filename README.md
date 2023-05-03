@@ -2,14 +2,16 @@
 
 ## Requirements
 
+Download the dataset from http://zissou.infosci.cornell.edu/convokit/datasets/movie-corpus/movie-corpus.zip
+
 To install requirements, run the following commands:
 
 - `pip install -r requirements.txt`
-- `pip install torch torchvision torchaudio`
+- `pip install torch`
 
 If GPU is [CUDA-enabled](https://developer.nvidia.com/cuda-gpus), run the following command:
 
-- `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118`
+- `pip install torch --index-url https://download.pytorch.org/whl/cu118`
 
 ## Usage
 
