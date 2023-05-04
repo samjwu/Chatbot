@@ -12,13 +12,22 @@ END = 2
 
 
 class Vocabulary:
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         self.name = name
-        self.trimmed = False
         self.word_to_index = dict()
-        self.word_to_count = dict()
         self.index_to_word = {PAD: "PAD", START: "START", END: "END"}
+        self.word_count = dict()
         self.num_words = 3
+        self.trimmed = False
+
+    def add_word(self, word: str) -> None:
+        if word not in self.word_to_index.keys():
+            self.word_to_index[word] = self.num_words
+            self.index_to_word[self.num_words] = word
+            self.word_count[word] = 1
+            self.num_words += 1
+        else:
+            self.word_count[word] += 1
 
 
 def extract_movie_lines_and_conversations(file_name: str) -> tuple[dict[str, str], dict[str, str]]:
