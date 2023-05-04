@@ -12,7 +12,7 @@ END = 2
 
 
 class Vocabulary:
-    def __init__(self, name) -> Vocabulary:
+    def __init__(self, name) -> None:
         self.name = name
         self.trimmed = False
         self.word_to_index = dict()
