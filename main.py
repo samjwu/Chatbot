@@ -37,7 +37,7 @@ def extract_movie_lines_and_conversations(file_name: str) -> tuple[dict[str, str
     return movie_lines, movie_conversations
 
 
-def extract_q_and_a(movie_conversations: dict[str, str]) -> list[list[str]]:
+def extract_questions_and_answers(movie_conversations: dict[str, str]) -> list[list[str]]:
     questions_and_answers = list()
 
     for conversation in movie_conversations.values():
@@ -70,15 +70,26 @@ def normalize_str(s: str) -> str:
     return s
 
 
-def generate_vocabulary(data_file, dataset_name) -> tuple[Vocabulary, list[list[str]]]:
+def generate_vocabulary(data_file: str, dataset_name: str) -> tuple[Vocabulary, list[list[str]]]:
     """
     Splits each line in file by tabs and then normalize them.
     Then return the questions and answers with a new Vocabulary.
     """
     lines = open(datafile, encoding='utf-8').read().strip().split('\n')
-    q_and_a = [[normalizeString(s) for s in l.split('\t')] for l in lines]
+    questions_and_answers = [[normalizeString(s) for s in l.split('\t')] for l in lines]
     vocab = Vocabulary(dataset_name)
-    return vocab, q_and_a
+    return vocab, questions_and_answers
+
+
+def is_short(question_and_answer: list[str], threshold: int) -> bool:
+    """Return true if both question and answer is shorter than threshold"""
+    question = question_and_answer[0]
+    answer = question_and_answer[1]
+    return len(question.split(' ')) < threshold and len(answer.split(' ')) < threshold
+
+
+def filter_questions_and_answers(questions_and_answers: list[list[str]]) -> list[list[str]]:
+    return [question_and_answer for question_and_answer in questions_and_answers if is_short(question_and_answer, 10)]
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -91,5 +102,5 @@ movie_lines, movie_conversations = extract_movie_lines_and_conversations(os.path
 delimiter = str(codecs.decode("\t", "unicode_escape"))
 with open(processed_data_output, "w", encoding="utf-8") as output_file:
     writer = csv.writer(output_file, delimiter=delimiter, lineterminator="\n")
-    for pair in extract_q_and_a(movie_conversations):
-        writer.writerow(pair)
+    for question_and_answer in extract_questions_and_answers(movie_conversations):
+        writer.writerow(question_and_answer)
