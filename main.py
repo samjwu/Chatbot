@@ -2,6 +2,7 @@ import codecs
 import csv
 import json 
 import os
+import unicodedata
 
 import torch
 
@@ -97,6 +98,13 @@ def extract_q_and_a(movie_conversations: dict[str, str]) -> list[list[str]]:
                 questions_and_answers.append([question, answer])
 
     return questions_and_answers
+
+
+def convert_unicode_to_ascii(s: str) -> None:
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', s)
+        if unicodedata.category(c) != 'Mn'
+    )
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
