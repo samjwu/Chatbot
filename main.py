@@ -2,11 +2,12 @@ import codecs
 import csv
 import json
 import os
+import re
 import unicodedata
 
 import torch
 
-import vocabulary
+from vocabulary import Vocabulary
 
 
 def extract_movie_lines_and_conversations(file_name: str) -> tuple[dict[str, str], dict[str, str]]:
@@ -40,7 +41,8 @@ def extract_q_and_a(movie_conversations: dict[str, str]) -> list[list[str]]:
     questions_and_answers = list()
 
     for conversation in movie_conversations.values():
-        for i in range(len(conversation["lines"]) - 1):  # ignore the last line because it has no answer
+        # ignore the last line because it has no answer
+        for i in range(len(conversation["lines"]) - 1):
             question = conversation["lines"][i]["text"].strip()
             answer = conversation["lines"][i+1]["text"].strip()
             
@@ -55,6 +57,28 @@ def convert_unicode_to_ascii(s: str) -> None:
         c for c in unicodedata.normalize('NFD', s)
         if unicodedata.category(c) != 'Mn'
     )
+
+
+def normalize_str(s: str) -> str:
+    s = convert_unicode_to_ascii(s.lower().strip())
+    # prepend punctuation with space
+    s = re.sub(r"([.!?])", r" \1", s)
+    # remove chars that are not letters or punctuation
+    s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
+    # condense multiple spaces into one space
+    s = re.sub(r"\s+", r" ", s).strip()
+    return s
+
+
+def generate_vocabulary(data_file, dataset_name) -> tuple[Vocabulary, list[list[str]]]:
+    """
+    Splits each line in file by tabs and then normalize them.
+    Then return the questions and answers with a new Vocabulary.
+    """
+    lines = open(datafile, encoding='utf-8').read().strip().split('\n')
+    q_and_a = [[normalizeString(s) for s in l.split('\t')] for l in lines]
+    vocab = Vocabulary(dataset_name)
+    return vocab, q_and_a
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

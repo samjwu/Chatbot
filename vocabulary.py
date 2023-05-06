@@ -1,3 +1,8 @@
+"""
+Keep track of words in the dataset
+and commonly used words.
+"""
+
 PAD = 0
 START = 1
 END = 2
@@ -28,7 +33,7 @@ class Vocabulary:
             self.add_word(word)
 
     def trim(self, min_count: int) -> None:
-        """Get rid of words with frequency below a given minimum count"""
+        """Get rid of words with frequency below a given minimum count."""
         if self.trimmed:
             return
 
