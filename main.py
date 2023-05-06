@@ -75,7 +75,7 @@ def generate_vocabulary(data_file: str, dataset_name: str) -> tuple[Vocabulary, 
     Splits each line in file by tabs and then normalize them.
     Then return the questions and answers with a new Vocabulary.
     """
-    lines = open(datafile, encoding='utf-8').read().strip().split('\n')
+    lines = open(data_file, encoding='utf-8').read().strip().split('\n')
     questions_and_answers = [[normalizeString(s) for s in l.split('\t')] for l in lines]
     vocab = Vocabulary(dataset_name)
     return vocab, questions_and_answers
@@ -90,6 +90,21 @@ def is_short(question_and_answer: list[str], threshold: int) -> bool:
 
 def filter_questions_and_answers(questions_and_answers: list[list[str]]) -> list[list[str]]:
     return [question_and_answer for question_and_answer in questions_and_answers if is_short(question_and_answer, 10)]
+
+
+def process_data(data_file, dataset_name):
+    vocab, questions_and_answers = generate_vocabulary(data_file, dataset_name)
+    print(f"{len(questions_and_answers)} questions and answers read from data file")
+    
+    questions_and_answers = filter_questions_and_answers(questions_and_answers)
+    print(f"{len(questions_and_answers)} questions and answers remaining after filtering")
+    
+    for question_and_answer in questions_and_answers:
+        vocab.add_sentence(question_and_answer[0])
+        vocab.add_sentence(question_and_answer[1])
+    print(f"{vocab.num_words} words in total")
+
+    return vocab, questions_and_answers
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
