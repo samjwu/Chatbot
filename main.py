@@ -29,6 +29,10 @@ class Vocabulary:
         else:
             self.word_count[word] += 1
 
+    def add_sentence(self, sentence: str) -> None:
+        for word in sentence.split(' '):
+            self.add_word(word)
+
 
 def extract_movie_lines_and_conversations(file_name: str) -> tuple[dict[str, str], dict[str, str]]:
     movie_lines = dict()
