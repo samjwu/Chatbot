@@ -82,17 +82,18 @@ def generate_vocabulary(data_file: str, dataset_name: str) -> tuple[Vocabulary, 
 
 
 def is_short(question_and_answer: list[str], threshold: int) -> bool:
-    """Return true if both question and answer is shorter than threshold"""
+    """Return true if both question and answer is shorter than threshold."""
     question = question_and_answer[0]
     answer = question_and_answer[1]
     return len(question.split(' ')) < threshold and len(answer.split(' ')) < threshold
 
 
 def filter_questions_and_answers(questions_and_answers: list[list[str]]) -> list[list[str]]:
+    """Keep only questions and answers longer than a min threshold."""
     return [question_and_answer for question_and_answer in questions_and_answers if is_short(question_and_answer, 10)]
 
 
-def process_data(data_file, dataset_name):
+def process_data(data_file: str, dataset_name: str) -> tuple[Vocabulary, list[list[str]]]:
     vocab, questions_and_answers = generate_vocabulary(data_file, dataset_name)
     print(f"{len(questions_and_answers)} questions and answers read from data file")
     
