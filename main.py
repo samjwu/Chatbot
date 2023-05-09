@@ -76,7 +76,7 @@ def generate_vocabulary(data_file: str, dataset_name: str) -> tuple[Vocabulary, 
     Then return the questions and answers with a new Vocabulary.
     """
     lines = open(data_file, encoding='utf-8').read().strip().split('\n')
-    questions_and_answers = [[normalizeString(s) for s in l.split('\t')] for l in lines]
+    questions_and_answers = [[normalize_str(s) for s in l.split('\t')] for l in lines]
     vocab = Vocabulary(dataset_name)
     return vocab, questions_and_answers
 
@@ -119,3 +119,8 @@ with open(processed_data_output, "w", encoding="utf-8") as output_file:
     writer = csv.writer(output_file, delimiter=delimiter, lineterminator="\n")
     for question_and_answer in extract_questions_and_answers(movie_conversations):
         writer.writerow(question_and_answer)
+
+vocab, questions_and_answers = process_data(processed_data_output, dataset)
+print("Questions and Answers:")
+for question_and_answer in questions_and_answers[:10]:
+    print(question_and_answer)

@@ -11,9 +11,9 @@ class Vocabulary:
     def __init__(self, name: str) -> None:
         self.name = name
         self.trimmed = False
-        initialize()
-
-    def initialize() -> None:
+        self.initialize()
+    
+    def initialize(self) -> None:
         self.word_to_index = dict()
         self.index_to_word = {PAD: "PAD", START: "START", END: "END"}
         self.word_count = dict()
@@ -48,7 +48,7 @@ class Vocabulary:
         total_words = len(self.word_to_index)
         print(f"keep {total_keep} out of {total_words} words = {(total_keep / total_words):.4g}%")
 
-        initialize()
+        self.initialize()
 
         for word in keep_words:
             self.add_word(word)
