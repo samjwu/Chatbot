@@ -46,7 +46,7 @@ class Vocabulary:
 
         total_keep = len(keep_words)
         total_words = len(self.word_to_index)
-        print(f"keep {total_keep} out of {total_words} words = {(total_keep / total_words):.4g}%")
+        print(f"Kept {total_keep} out of {total_words} words = {(total_keep / total_words * 100):.4g}%")
 
         self.initialize()
 

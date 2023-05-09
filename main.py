@@ -108,6 +108,40 @@ def process_data(data_file: str, dataset_name: str) -> tuple[Vocabulary, list[li
     return vocab, questions_and_answers
 
 
+def trim_words(vocab: Vocabulary, questions_and_answers: list[list[str]], threshold: int) -> list[list[str]]:
+    """
+    Get rid of questions and answers 
+    with words that have frequency that fall below a given threshold.
+    """
+    vocab.trim(threshold)
+    
+    keep_questions_and_answers = []
+    for question_and_answer in questions_and_answers:
+        question = question_and_answer[0]
+        answer = question_and_answer[1]
+        
+        keep_question = True
+        keep_answer = True
+        
+        for word in question.split(' '):
+            if word not in vocab.word_to_index:
+                keep_question = False
+                break
+        
+        for word in answer.split(' '):
+            if word not in vocab.word_to_index:
+                keep_answer = False
+                break
+
+        if keep_question and keep_answer:
+            keep_questions_and_answers.append(question_and_answer)
+
+    total_keep = len(keep_questions_and_answers)
+    total_sentences = len(questions_and_answers)
+    print(f"Kept {total_keep} out of {total_sentences} questions and answers = {(total_keep / total_sentences * 100):.4f}%")
+    return keep_questions_and_answers
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 dataset = "movie-corpus"
@@ -125,3 +159,5 @@ vocab, questions_and_answers = process_data(processed_data_output, dataset)
 print("Questions and Answers:")
 for question_and_answer in questions_and_answers[:10]:
     print(question_and_answer)
+
+questions_and_answers = trim_words(vocab, questions_and_answers, 3)
