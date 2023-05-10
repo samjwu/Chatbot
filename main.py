@@ -3,11 +3,13 @@ import csv
 import json
 import itertools
 import os
+import random
 import re
 import unicodedata
 
 import torch
 
+import vocabulary
 from vocabulary import Vocabulary
 
 
@@ -104,7 +106,7 @@ def process_data(data_file: str, dataset_name: str) -> tuple[Vocabulary, list[li
     for question_and_answer in questions_and_answers:
         vocab.add_sentence(question_and_answer[0])
         vocab.add_sentence(question_and_answer[1])
-    print(f"{vocab.num_words} words in total")
+    print(f"{vocab.num_words} words in total\n")
 
     return vocab, questions_and_answers
 
@@ -139,19 +141,19 @@ def trim_words(vocab: Vocabulary, questions_and_answers: list[list[str]], thresh
 
     total_keep = len(keep_questions_and_answers)
     total_sentences = len(questions_and_answers)
-    print(f"Kept {total_keep} out of {total_sentences} questions and answers = {(total_keep / total_sentences * 100):.4f}%")
+    print(f"Kept {total_keep} out of {total_sentences} questions and answers = {(total_keep / total_sentences * 100):.4f}%\n")
     return keep_questions_and_answers
 
 
-def sentence_to_indices(vocab: Vocabulary, sentence: str) -> list[int]:
+def sentence_to_indices(vocab: Vocabulary, sentence: str) -> list[list[int]]:
     return [vocab.word_to_index[word] for word in sentence.split(' ')] + [vocabulary.END]
 
 
-def add_padding(tensor: list[int], fillvalue: int) -> list[int]:
-    return list(itertools.zip_longest(*tensor, fillvalue))
+def add_padding(tensor: list[list[int]], fillvalue: int) -> list[int]:
+    return list(itertools.zip_longest(*tensor, fillvalue=fillvalue))
 
 
-def construct_binary_matrix(tensor: list[int]) -> list[list[int]]:
+def construct_binary_matrix(tensor: list[list[int]]) -> list[list[int]]:
     matrix = []
 
     for i, seq in enumerate(tensor):
@@ -192,6 +194,25 @@ def generate_output_tensor(sentences: list[str], vocab: Vocabulary) -> tuple[lis
     return padded_output, mask, max_target_len
 
 
+def convert_batch_to_training_data(
+    vocab: Vocabulary, 
+    batch: list[list[str]]
+) -> tuple[list[int], list[int], list[int], list[int], int]:
+    batch.sort(key=lambda x: len(x[0].split(" ")), reverse=True)
+    
+    question_batch = list() # input
+    answer_batch = list() # output
+    
+    for question_and_answer in batch:
+        question_batch.append(question_and_answer[0])
+        answer_batch.append(question_and_answer[1])
+    
+    input_data, lengths = generate_input_tensor(question_batch, vocab)
+    output_data, mask, max_target_len = generate_output_tensor(answer_batch, vocab)
+    
+    return input_data, lengths, output_data, mask, max_target_len
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 dataset = "movie-corpus"
@@ -208,4 +229,17 @@ vocab, questions_and_answers = process_data(processed_data_output, dataset)
 print("Questions and Answers:")
 for question_and_answer in questions_and_answers[:10]:
     print(question_and_answer)
+print("\n")
 questions_and_answers = trim_words(vocab, questions_and_answers, 3)
+
+small_batch_size = 5
+input_variable, lengths, output_variable, mask, max_target_len = \
+    convert_batch_to_training_data(
+        vocab,
+        [random.choice(question_and_answer) for _ in range(small_batch_size)]
+    )
+print("input_variable:", input_variable)
+print("lengths:", lengths)
+print("output_variable:", output_variable)
+print("padding mask:", mask)
+print("max_target_len:", max_target_len)
