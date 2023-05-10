@@ -166,11 +166,36 @@ def construct_binary_matrix(tensor: list[int]) -> list[list[int]]:
     return matrix
 
 
+def generate_input_tensor(sentences: list[str], vocab: Vocabulary) -> tuple[list[int], list[int]]:
+    """
+    Convert an input list into a padded sequence tensor.
+    Return the tensor and the lengths of each batch.
+    """
+    batches = [sentence_to_indices(vocab, sentence) for sentence in sentences]
+    lengths = torch.tensor([len(indices) for indices in batches])
+    padded_list = add_padding(batches, 0)
+    padded_input = torch.LongTensor(padded_list)
+    return padded_input, lengths
+
+
+def generate_output_tensor(sentences: list[str], vocab: Vocabulary) -> tuple[list[int], list[int], int]:
+    """
+    Convert an output list into a padded sequence tensor.
+    Return the tensor, a padding mask, and the max target length.
+    """
+    batches = [sentence_to_indices(vocab, sentence) for sentence in sentences]
+    max_target_len = max([len(indices) for indices in batches])
+    padded_list = add_padding(batches, 0)
+    mask = construct_binary_matrix(padded_list)
+    mask = torch.BoolTensor(mask)
+    padded_output = torch.LongTensor(padded_list)
+    return padded_output, mask, max_target_len
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 dataset = "movie-corpus"
 processed_data_output = os.path.join(dataset, "formatted_movie_lines.txt")
-
 movie_lines, movie_conversations = extract_movie_lines_and_conversations(os.path.join(dataset, "utterances.jsonl"))
 
 delimiter = str(codecs.decode("\t", "unicode_escape"))
@@ -183,5 +208,4 @@ vocab, questions_and_answers = process_data(processed_data_output, dataset)
 print("Questions and Answers:")
 for question_and_answer in questions_and_answers[:10]:
     print(question_and_answer)
-
 questions_and_answers = trim_words(vocab, questions_and_answers, 3)
