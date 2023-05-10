@@ -1,6 +1,7 @@
 import codecs
 import csv
 import json
+import itertools
 import os
 import re
 import unicodedata
@@ -140,6 +141,14 @@ def trim_words(vocab: Vocabulary, questions_and_answers: list[list[str]], thresh
     total_sentences = len(questions_and_answers)
     print(f"Kept {total_keep} out of {total_sentences} questions and answers = {(total_keep / total_sentences * 100):.4f}%")
     return keep_questions_and_answers
+
+
+def sentence_to_indices(vocab: Vocabulary, sentence: str) -> list[int]:
+    return [vocab.word_to_index[word] for word in sentence.split(' ')] + [vocabulary.END]
+
+
+def add_padding(tensor: list[int], fillvalue: int) -> list[int]:
+    return list(itertools.zip_longest(*tensor, fillvalue))
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
