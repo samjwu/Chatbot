@@ -151,6 +151,21 @@ def add_padding(tensor: list[int], fillvalue: int) -> list[int]:
     return list(itertools.zip_longest(*tensor, fillvalue))
 
 
+def construct_binary_matrix(tensor: list[int]) -> list[list[int]]:
+    matrix = []
+
+    for i, seq in enumerate(tensor):
+        matrix.append([])
+
+        for token in seq:
+            if token == vocabulary.PAD:
+                matrix[i].append(0)
+            else:
+                matrix[i].append(1)
+
+    return matrix
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 dataset = "movie-corpus"
