@@ -10,13 +10,13 @@ import torch.nn
 
 class Decoder(torch.nn.Module):
     def __init__(
-        self, 
-        attention_model: str, 
-        embedding: torch.nn.Embedding, 
-        hidden_size: int, 
-        output_size: int, 
-        num_layers: int=1, 
-        dropout: float=0.1
+        self,
+        attention_model: str,
+        embedding: torch.nn.Embedding,
+        hidden_size: int,
+        output_size: int,
+        num_layers: int = 1,
+        dropout: float = 0.1,
     ) -> None:
         super(Decoder, self).__init__()
 
@@ -31,7 +31,7 @@ class Decoder(torch.nn.Module):
             input_size=hidden_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
-            dropout=(0 if num_layers == 1 else dropout)
+            dropout=(0 if num_layers == 1 else dropout),
         )
         self.embedding_dropout = torch.nn.Dropout(dropout)
         self.concat = torch.nn.Linear(hidden_size * 2, hidden_size)

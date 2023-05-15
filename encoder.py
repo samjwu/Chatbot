@@ -9,24 +9,24 @@ import torch.nn
 
 class Encoder(torch.nn.Module):
     def __init__(
-        self, 
-        hidden_size: int, 
-        embedding: torch.nn.Embedding, 
-        num_layers: int=1, 
-        dropout: int=0
+        self,
+        hidden_size: int,
+        embedding: torch.nn.Embedding,
+        num_layers: int = 1,
+        dropout: int = 0,
     ) -> None:
         super(Encoder, self).__init__()
 
         self.hidden_size = hidden_size
         self.embedding = embedding
         self.num_layers = num_layers
-        
+
         self.gru = torch.nn.GRU(
             input_size=hidden_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
             dropout=(0 if num_layers == 1 else dropout),
-            bidirectional=True
+            bidirectional=True,
         )
 
     def step(self, input_sentence, input_lengths, hidden_state_vectors=None):
@@ -45,6 +45,9 @@ class Encoder(torch.nn.Module):
         # pad a packed batch of variable length sequences (inverse of pack_padded_sequence)
         output_vectors, _ = torch.nn.utils.rnn.pad_packed_sequence(output_vectors)
         # sum the output vectors
-        output_vectors = output_vectors[:, :, :self.hidden_size] + output_vectors[:, : ,self.hidden_size:]
+        output_vectors = (
+            output_vectors[:, :, : self.hidden_size]
+            + output_vectors[:, :, self.hidden_size :]
+        )
 
         return output_vectors, hidden_state_vectors

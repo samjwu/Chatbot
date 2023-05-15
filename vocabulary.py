@@ -7,12 +7,13 @@ PAD = 0
 START = 1
 END = 2
 
+
 class Vocabulary:
     def __init__(self, name: str) -> None:
         self.name = name
         self.trimmed = False
         self.initialize()
-    
+
     def initialize(self) -> None:
         self.word_to_index = dict()
         self.index_to_word = {PAD: "PAD", START: "START", END: "END"}
@@ -29,7 +30,7 @@ class Vocabulary:
             self.word_count[word] += 1
 
     def add_sentence(self, sentence: str) -> None:
-        for word in sentence.split(' '):
+        for word in sentence.split(" "):
             self.add_word(word)
 
     def trim(self, min_count: int) -> None:
@@ -46,7 +47,9 @@ class Vocabulary:
 
         total_keep = len(keep_words)
         total_words = len(self.word_to_index)
-        print(f"Kept {total_keep} out of {total_words} words = {(total_keep / total_words * 100):.4g}%\n")
+        print(
+            f"Kept {total_keep} out of {total_words} words = {(total_keep / total_words * 100):.4g}%\n"
+        )
 
         self.initialize()
 
