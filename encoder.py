@@ -29,7 +29,12 @@ class Encoder(torch.nn.Module):
             bidirectional=True,
         )
 
-    def step(self, input_sentence, input_lengths, hidden_state_vectors=None):
+    def forward_pass(
+        self,
+        input_sentence: Tensor,
+        input_lengths: Tensor,
+        hidden_state_vectors: Tensor = None,
+    ) -> tuple[Tensor, Tensor]:
         """
         Iterate through input sentence one word at a time.
         Yield an output vector and hidden state vector each step.
