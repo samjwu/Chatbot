@@ -42,13 +42,17 @@ class Encoder(torch.nn.Module):
         # convert word indices to embeddings
         # https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html
         embedded = self.embedding(input_sentence)
+
         # pack a Tensor containing padded sequences of variable length
         packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
+
         # do a forward pass through the GRU
         # passing the hidden state vector to the next time step and recording the output vector
         output_vectors, hidden_state_vectors = self.gru(packed, hidden_state_vectors)
+
         # pad a packed batch of variable length sequences (inverse of pack_padded_sequence)
         output_vectors, _ = torch.nn.utils.rnn.pad_packed_sequence(output_vectors)
+
         # sum the output vectors
         output_vectors = (
             output_vectors[:, :, : self.hidden_size]
