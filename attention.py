@@ -1,6 +1,6 @@
 """
 Attention is to enhance certain parts of the input sequence and diminish other parts.
-Calculated using output vectors from the encoder and hidden state from the decoder.
+Calculated using output vector from the encoder and hidden state vector from the decoder.
 """
 
 import torch
@@ -25,24 +25,24 @@ class Attention(nn.Module):
             self.parameter = torch.nn.Parameter(torch.FloatTensor(hidden_size))
 
     def calculate_dot_score(
-        self, hidden_state_vectors: Tensor, encoder_output_vectors: Tensor
+        self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
     ) -> Tensor:
-        return torch.sum(hidden_state_vectors * encoder_output_vectors, dim=2)
+        return torch.sum(hidden_state_vector * encoder_output_vector, dim=2)
 
     def calculate_general_score(
-        self, hidden_state_vectors: Tensor, encoder_output_vectors: Tensor
+        self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
     ) -> Tensor:
-        energy = self.attention(encoder_output_vectors)
-        return torch.sum(hidden_state_vectors * energy, dim=2)
+        energy = self.attention(encoder_output_vector)
+        return torch.sum(hidden_state_vector * energy, dim=2)
 
     def calculate_concat_score(
-        self, hidden_state_vectors: Tensor, encoder_output_vectors: Tensor
+        self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
     ) -> Tensor:
         energy = self.attention(
             torch.cat(
                 (
-                    hidden_state_vectors.expand(encoder_output_vectors.size(0), -1, -1),
-                    encoder_output_vectors,
+                    hidden_state_vector.expand(encoder_output_vector.size(0), -1, -1),
+                    encoder_output_vector,
                 ),
                 2,
             )
@@ -50,7 +50,7 @@ class Attention(nn.Module):
         return torch.sum(self.parameter * energy, dim=2)
 
     def forward_pass(
-        self, hidden_state_vectors: Tensor, encoder_output_vectors: Tensor
+        self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
     ) -> Tensor:
         """
         Calculate attention weights or energies
@@ -58,15 +58,15 @@ class Attention(nn.Module):
         """
         if self.method == "general":
             attention_weights = self.general_score(
-                hidden_state_vectors, encoder_output_vectors
+                hidden_state_vector, encoder_output_vector
             )
         elif self.method == "concat":
             attention_weights = self.concat_score(
-                hidden_state_vectors, encoder_output_vectors
+                hidden_state_vector, encoder_output_vector
             )
         elif self.method == "dot":
             attention_weights = self.dot_score(
-                hidden_state_vectors, encoder_output_vectors
+                hidden_state_vector, encoder_output_vector
             )
 
         attention_weights = attention_weights.t()

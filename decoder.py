@@ -42,7 +42,7 @@ class Decoder(torch.nn.Module):
         self,
         input_step: Tensor,
         last_hidden_layer: Tensor,
-        encoder_output_vectors: Tensor,
+        encoder_output_vector: Tensor,
     ) -> tuple[Tensor, Tensor]:
         """
         Iterate through input one step/word at a time.
@@ -53,13 +53,13 @@ class Decoder(torch.nn.Module):
         embedded = self.embedding_dropout(embedded)
 
         # do a forward pass through the GRU
-        rnn_output, hidden_state_vectors = self.gru(embedded, last_hidden_layer)
+        rnn_output, hidden_state_vector = self.gru(embedded, last_hidden_layer)
 
         # calculate attention weights from the current GRU output
-        attention_weights = self.attention_model(rnn_output, encoder_output_vectors)
+        attention_weights = self.attention_model(rnn_output, encoder_output_vector)
 
         # multiply attention weights by encoder outputs to get weighted sum context vector
-        context_vector = attention_weights.bmm(encoder_output_vectors.transpose(0, 1))
+        context_vector = attention_weights.bmm(encoder_output_vector.transpose(0, 1))
 
         # concatenate weighted context vector and GRU output
         rnn_output = rnn_output.squeeze(0)
@@ -68,7 +68,7 @@ class Decoder(torch.nn.Module):
         concat_output = torch.tanh(self.concat(concat_input))
 
         # predict next word
-        output_vectors = self.out(concat_output)
-        output_vectors = torch.nn.functional.softmax(output_vectors, dim=1)
+        output_vector = self.out(concat_output)
+        output_vector = torch.nn.functional.softmax(output_vector, dim=1)
 
-        return output_vectorsoutput, hidden_state_vectors
+        return output_vector, hidden_state_vector

@@ -33,7 +33,7 @@ class Encoder(torch.nn.Module):
         self,
         input_sentence: Tensor,
         input_lengths: Tensor,
-        hidden_state_vectors: Tensor = None,
+        hidden_state_vector: Tensor = None,
     ) -> tuple[Tensor, Tensor]:
         """
         Iterate through input sentence one word at a time.
@@ -48,15 +48,15 @@ class Encoder(torch.nn.Module):
 
         # do a forward pass through the GRU
         # passing the hidden state vector to the next time step and recording the output vector
-        output_vectors, hidden_state_vectors = self.gru(packed, hidden_state_vectors)
+        output_vector, hidden_state_vector = self.gru(packed, hidden_state_vector)
 
         # pad a packed batch of variable length sequences (inverse of pack_padded_sequence)
-        output_vectors, _ = torch.nn.utils.rnn.pad_packed_sequence(output_vectors)
+        output_vector, _ = torch.nn.utils.rnn.pad_packed_sequence(output_vector)
 
-        # sum the output vectors
-        output_vectors = (
-            output_vectors[:, :, : self.hidden_size]
-            + output_vectors[:, :, self.hidden_size :]
+        # get the sums the output vector
+        output_vector = (
+            output_vector[:, :, : self.hidden_size]
+            + output_vector[:, :, self.hidden_size :]
         )
 
-        return output_vectors, hidden_state_vectors
+        return output_vector, hidden_state_vector
