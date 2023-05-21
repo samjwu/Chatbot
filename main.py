@@ -40,7 +40,7 @@ small_batch_size = 5
     output_variable,
     mask,
     max_target_len,
-) = training.convert_batch_to_training_data(
+) = processing.convert_batch_to_training_data(
     vocab, [random.choice(question_and_answer) for _ in range(small_batch_size)]
 )
 print("input_variable:", input_variable)
