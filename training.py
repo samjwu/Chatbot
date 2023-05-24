@@ -2,16 +2,24 @@
 Utility functions for training an attention model.
 """
 
+import random
+
 import torch
 
+import processing
 import vocabulary
 from decoder import Decoder
 from encoder import Encoder
+from vocabulary import Vocabulary
 
 
 def calculate_negative_log_likelihood_loss(
     input_vector: Tensor, target: Tensor, mask: Tensor
 ) -> tuple[Tensor, float]:
+    """
+    Calculate the average negative log likelihood
+    of elements that map to 1s in the mask tensor.
+    """
     total = mask.sum()
     crossEntropy = -torch.log(
         torch.gather(input_vector, 1, target.view(-1, 1)).squeeze(1)
@@ -30,12 +38,17 @@ def train(
     encoder: Encoder,
     decoder: Decoder,
     embedding: torch.nn.Embedding,
-    encoder_optimizer,
-    decoder_optimizer,
+    encoder_optimizer: torch.optim.Optimizer,
+    decoder_optimizer: torch.optim.Optimizer,
     batch_size: int,
     clip_value: float,
     max_length=10,
 ) -> Tensor:
+    """
+    Perform one training iteration.
+    Use teacher forcing for some probability
+    and gradient clipping for faster convergence.
+    """
     # initial configurations
     # zero out gradients to avoid tracking unneeded information
     encoder_optimizer.zero_grad()
@@ -117,3 +130,94 @@ def train(
     decoder_optimizer.step()
 
     return sum(print_losses) / totals
+
+
+def train_num_iterations(
+    model_name: str,
+    vocab: Vocabulary,
+    questions_and_answers: list[list[str]],
+    encoder: Encoder,
+    decoder: Decoder,
+    encoder_optimizer: torch.optim.Optimizer,
+    decoder_optimizer: torch.optim.Optimizer,
+    embedding: torch.nn.Embedding,
+    num_encoder_layers: int,
+    num_decoder_layers: int,
+    save_directory: str,
+    num_iterations: int,
+    batch_size: int,
+    print_iteration: int,
+    save_iteration: int,
+    clip_value: float,
+    dataset_name: str,
+    is_loaded_file: bool,
+):
+    """Run a given number of training iterations."""
+    # load training batches for each iteration
+    training_batches = [
+        processing.convert_batch_to_training_data(
+            vocab, [random.choice(questions_and_answers) for _ in range(batch_size)]
+        )
+        for _ in range(num_iterations)
+    ]
+
+    print("Initializing...")
+    start_iteration = 1
+    print_loss = 0
+    if is_loaded_file:
+        start_iteration = checkpoint["iteration"] + 1
+
+    print("Training...")
+    for iteration in range(start_iteration, num_iterations + 1):
+        training_batch = training_batches[iteration - 1]
+        input_variable, lengths, target_variable, mask, max_target_len = training_batch
+
+        # run one training iteration using the training batch
+        loss = train(
+            input_variable,
+            lengths,
+            target_variable,
+            mask,
+            max_target_len,
+            encoder,
+            decoder,
+            embedding,
+            encoder_optimizer,
+            decoder_optimizer,
+            batch_size,
+            clip_value,
+        )
+        print_loss += loss
+
+        if iteration % print_iteration == 0:
+            print_loss_avg = print_loss / print_iteration
+            print(
+                "Iteration: {}; Percent complete: {:.1f}%; Average loss: {:.4f}".format(
+                    iteration, iteration / num_iterations * 100, print_loss_avg
+                )
+            )
+            print_loss = 0
+
+        # save the checkpoint to run inference or train later
+        if iteration % save_iteration == 0:
+            directory = os.path.join(
+                save_directory,
+                model_name,
+                dataset_name,
+                "{}-{}_{}".format(num_encoder_layers, num_decoder_layers, hidden_size),
+            )
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            torch.save(
+                {
+                    "iteration": iteration,
+                    "en": encoder.state_dict(),
+                    "de": decoder.state_dict(),
+                    "en_opt": encoder_optimizer.state_dict(),
+                    "de_opt": decoder_optimizer.state_dict(),
+                    "loss": loss,
+                    "voc_dict": voc.__dict__,
+                    "embedding": embedding.state_dict(),
+                },
+                os.path.join(directory, "{}_{}.tar".format(iteration, "checkpoint")),
+            )
