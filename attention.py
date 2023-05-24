@@ -27,17 +27,20 @@ class Attention(nn.Module):
     def calculate_dot_score(
         self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
     ) -> Tensor:
+        """Reference: https://arxiv.org/pdf/1508.04025.pdf"""
         return torch.sum(hidden_state_vector * encoder_output_vector, dim=2)
 
     def calculate_general_score(
         self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
     ) -> Tensor:
+        """Reference: https://arxiv.org/pdf/1508.04025.pdf"""
         energy = self.attention(encoder_output_vector)
         return torch.sum(hidden_state_vector * energy, dim=2)
 
     def calculate_concat_score(
         self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
     ) -> Tensor:
+        """Reference: https://arxiv.org/pdf/1508.04025.pdf"""
         energy = self.attention(
             torch.cat(
                 (

@@ -112,6 +112,11 @@ def filter_questions_and_answers(
 def process_data(
     data_file: str, dataset_name: str
 ) -> tuple[Vocabulary, list[list[str]]]:
+    """
+    Given a data file, convert it to a Vocabulary
+    while keeping only question and answer sentences
+    longer than a given threshold.
+    """
     vocab, questions_and_answers = generate_vocabulary(data_file, dataset_name)
     print(f"{len(questions_and_answers)} questions and answers read from data file")
 
@@ -167,16 +172,22 @@ def trim_words(
 
 
 def sentence_to_indices(vocab: Vocabulary, sentence: str) -> list[list[int]]:
+    "Convert each word to its index in the Vocabulary."
     return [vocab.word_to_index[word] for word in sentence.split(" ")] + [
         vocabulary.END
     ]
 
 
 def add_padding(tensor: list[list[int]], fillvalue: int) -> list[int]:
+    """Fill empty slots in the tensors with a given value."""
     return list(itertools.zip_longest(*tensor, fillvalue=fillvalue))
 
 
 def construct_binary_matrix(tensor: list[list[int]]) -> list[list[int]]:
+    """
+    Convert a tensor into a matrix of 0s and 1s.
+    Use 0s if the value is a padding value. Otherwise use 1s.
+    """
     matrix = []
 
     for i, seq in enumerate(tensor):
@@ -224,6 +235,10 @@ def generate_output_tensor(
 def convert_batch_to_training_data(
     vocab: Vocabulary, batch: list[list[str]]
 ) -> tuple[list[int], list[int], list[int], list[int], int]:
+    """
+    Prepare a batch of data for use in training.
+    Questions become input data and answers become output data.
+    """
     batch.sort(key=lambda x: len(x[0].split(" ")), reverse=True)
 
     question_batch = list()  # input
