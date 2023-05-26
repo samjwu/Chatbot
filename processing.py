@@ -1,5 +1,6 @@
 """
 Utility functions for handling processing data.
+Includes reading input data and preparing it for training.
 """
 
 import itertools

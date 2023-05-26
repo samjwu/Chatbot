@@ -1,6 +1,4 @@
-"""
-Utility functions for training an attention model.
-"""
+"""Utility functions for training an attention model."""
 
 import random
 
@@ -63,7 +61,6 @@ def train(
     print_losses = []
     totals = 0
 
-    # do a forward pass through the encoder
     encoder_output_vector, encoder_hidden_state_vector = encoder.forward_pass(
         input_variable, input_lengths
     )
