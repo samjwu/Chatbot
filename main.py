@@ -12,6 +12,7 @@ from vocabulary import Vocabulary
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# processing data
 dataset = "movie-corpus"
 processed_data_output = os.path.join(dataset, "formatted_movie_lines.txt")
 movie_lines, movie_conversations = processing.extract_movie_lines_and_conversations(
@@ -48,3 +49,23 @@ print("lengths:", lengths)
 print("output_variable:", output_variable)
 print("padding mask:", mask)
 print("max_target_len:", max_target_len)
+
+# model configurations
+model_name = "chatbot_model"
+attention_model = "dot"
+hidden_size = 500
+encoder_num_layers = 2
+decoder_num_layers = 2
+dropout = 0.1
+batch_size = 64
+loadFilename = None
+checkpoint_iterations = 4000
+save_directory = os.path.join("data", "save")
+
+loadFilename = os.path.join(
+    save_directory,
+    model_name,
+    dataset,
+    "{}-{}_{}".format(encoder_num_layers, decoder_num_layers, hidden_size),
+    "{}_checkpoint.tar".format(checkpoint_iterations),
+)
