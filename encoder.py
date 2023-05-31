@@ -4,6 +4,7 @@ Use Recurrent Neural Networks (RNN) and Gated Recurrent Unit (GRU)
 to yield an output vector and hidden state vector each step.
 """
 
+import torch
 import torch.nn
 
 
@@ -31,10 +32,10 @@ class Encoder(torch.nn.Module):
 
     def forward_pass(
         self,
-        input_sentence: Tensor,
-        input_lengths: Tensor,
-        hidden_state_vector: Tensor = None,
-    ) -> tuple[Tensor, Tensor]:
+        input_sentence: torch.Tensor,
+        input_lengths: torch.Tensor,
+        hidden_state_vector: torch.Tensor = None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Iterate through input sentence one word at a time.
         Yield an output vector and hidden state vector each step.
@@ -43,7 +44,7 @@ class Encoder(torch.nn.Module):
         # https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html
         embedded = self.embedding(input_sentence)
 
-        # pack a Tensor containing padded sequences of variable length
+        # pack a tensor containing padded sequences of variable length
         packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
 
         # do a forward pass through the GRU

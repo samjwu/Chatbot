@@ -12,8 +12,8 @@ from vocabulary import Vocabulary
 
 
 def calculate_negative_log_likelihood_loss(
-    input_vector: Tensor, target: Tensor, mask: Tensor
-) -> tuple[Tensor, float]:
+    input_vector: torch.Tensor, target: torch.Tensor, mask: torch.Tensor
+) -> tuple[torch.Tensor, float]:
     """
     Calculate the average negative log likelihood
     of elements that map to 1s in the mask tensor.
@@ -28,10 +28,10 @@ def calculate_negative_log_likelihood_loss(
 
 
 def train(
-    input_variable: Tensor,
-    input_lengths: Tensor,
-    target_variable: Tensor,
-    mask: Tensor,
+    input_variable: torch.Tensor,
+    input_lengths: torch.Tensor,
+    target_variable: torch.Tensor,
+    mask: torch.Tensor,
     max_target_len: int,
     encoder: Encoder,
     decoder: Decoder,
@@ -41,7 +41,7 @@ def train(
     batch_size: int,
     clip_value: float,
     max_length=10,
-) -> Tensor:
+) -> torch.Tensor:
     """
     Perform one training iteration.
     Use teacher forcing for some probability
@@ -208,12 +208,12 @@ def train_num_iterations(
             torch.save(
                 {
                     "iteration": iteration,
-                    "en": encoder.state_dict(),
-                    "de": decoder.state_dict(),
-                    "en_opt": encoder_optimizer.state_dict(),
-                    "de_opt": decoder_optimizer.state_dict(),
+                    "encoder": encoder.state_dict(),
+                    "decoder": decoder.state_dict(),
+                    "encoder_optimizer": encoder_optimizer.state_dict(),
+                    "decoder_optimizer": decoder_optimizer.state_dict(),
                     "loss": loss,
-                    "voc_dict": voc.__dict__,
+                    "vocabulary_dictionary": vocab.__dict__,
                     "embedding": embedding.state_dict(),
                 },
                 os.path.join(directory, "{}_{}.tar".format(iteration, "checkpoint")),

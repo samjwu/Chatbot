@@ -5,6 +5,7 @@ Recurrent Neural Networks (RNN) that takes an input word and fixed-length contex
 and returns a guess for the next word in the sequence and a hidden state to use in the next iteration.
 """
 
+import torch
 import torch.nn
 import torch.nn.functional
 
@@ -40,10 +41,10 @@ class Decoder(torch.nn.Module):
 
     def forward_pass(
         self,
-        input_step: Tensor,
-        last_hidden_layer: Tensor,
-        encoder_output_vector: Tensor,
-    ) -> tuple[Tensor, Tensor]:
+        input_step: torch.Tensor,
+        last_hidden_layer: torch.Tensor,
+        encoder_output_vector: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Iterate through input one step/word at a time.
         Yield an output vector and hidden state vector each step.
