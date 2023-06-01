@@ -18,11 +18,11 @@ class GreedySearch(torch.nn.Module):
         self.encoder = encoder
         self.decoder = decoder
 
-    def forward_pass(
+    def forward(
         self, input_sequence: Tensor, input_length: Tensor, max_length: int
     ) -> tuple[Tensor, Tensor]:
         """Perform multiple forward passes on a given input sequence using RNN decoder."""
-        encoder_output_vector, encoder_hidden_state_vector = self.encoder.forward_pass(
+        encoder_output_vector, encoder_hidden_state_vector = self.encoder(
             input_sequence, input_length
         )
 

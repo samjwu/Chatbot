@@ -9,6 +9,8 @@ import torch
 import torch.nn
 import torch.nn.functional
 
+from attention import Attention
+
 
 class Decoder(torch.nn.Module):
     def __init__(
@@ -39,7 +41,9 @@ class Decoder(torch.nn.Module):
         self.concat = torch.nn.Linear(hidden_size * 2, hidden_size)
         self.out = torch.nn.Linear(hidden_size, output_size)
 
-    def forward_pass(
+        self.attention = Attention(attention_model, hidden_size)
+
+    def forward(
         self,
         input_step: torch.Tensor,
         last_hidden_layer: torch.Tensor,
@@ -57,7 +61,7 @@ class Decoder(torch.nn.Module):
         rnn_output, hidden_state_vector = self.gru(embedded, last_hidden_layer)
 
         # calculate attention weights from the current GRU output
-        attention_weights = self.attention_model(rnn_output, encoder_output_vector)
+        attention_weights = self.attention(rnn_output, encoder_output_vector)
 
         # multiply attention weights by encoder outputs to get weighted sum context vector
         context_vector = attention_weights.bmm(encoder_output_vector.transpose(0, 1))

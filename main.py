@@ -106,3 +106,59 @@ if has_checkpoint:
     decoder.load_state_dict(decoder_state_dict)
 encoder = encoder.to(device)
 decoder = decoder.to(device)
+
+# training configurations
+learning_rate = 0.0001
+decoder_learning_ratio = 5.0
+num_iterations = 4000
+print_iteration = 1
+save_iteration = 500
+clip_value = 50.0
+teacher_forcing_ratio = 1.0
+
+# set dropout layers in train mode
+encoder.train()
+decoder.train()
+
+# initialize optimizers
+encoder_optimizer = torch.optim.Adam(encoder.parameters(), lr=learning_rate)
+decoder_optimizer = torch.optim.Adam(
+    decoder.parameters(), lr=learning_rate * decoder_learning_ratio
+)
+if has_checkpoint:
+    encoder_optimizer.load_state_dict(encoder_optimizer_state_dict)
+    decoder_optimizer.load_state_dict(decoder_optimizer_state_dict)
+
+if torch.cuda.is_available():
+    for state in encoder_optimizer.state.values():
+        for k, v in state.items():
+            if isinstance(v, torch.Tensor):
+                state[k] = v.cuda()
+    for state in decoder_optimizer.state.values():
+        for k, v in state.items():
+            if isinstance(v, torch.Tensor):
+                state[k] = v.cuda()
+
+# train the model
+training.train_num_iterations(
+    model_name,
+    vocab,
+    questions_and_answers,
+    encoder,
+    decoder,
+    encoder_optimizer,
+    decoder_optimizer,
+    embedding,
+    encoder_num_layers,
+    decoder_num_layers,
+    save_directory,
+    num_iterations,
+    batch_size,
+    print_iteration,
+    save_iteration,
+    clip_value,
+    dataset,
+    has_checkpoint,
+    teacher_forcing_ratio,
+    device,
+)

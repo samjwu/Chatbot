@@ -8,7 +8,7 @@ import torch.nn
 import torch.nn.functional
 
 
-class Attention(nn.Module):
+class Attention(torch.nn.Module):
     def __init__(self, method: str, hidden_size: int) -> None:
         super(Attention, self).__init__()
 
@@ -25,21 +25,21 @@ class Attention(nn.Module):
             self.parameter = torch.nn.Parameter(torch.FloatTensor(hidden_size))
 
     def calculate_dot_score(
-        self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
-    ) -> Tensor:
+        self, hidden_state_vector: torch.Tensor, encoder_output_vector: torch.Tensor
+    ) -> torch.Tensor:
         """Reference: https://arxiv.org/pdf/1508.04025.pdf"""
         return torch.sum(hidden_state_vector * encoder_output_vector, dim=2)
 
     def calculate_general_score(
-        self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
-    ) -> Tensor:
+        self, hidden_state_vector: torch.Tensor, encoder_output_vector: torch.Tensor
+    ) -> torch.Tensor:
         """Reference: https://arxiv.org/pdf/1508.04025.pdf"""
         energy = self.attention(encoder_output_vector)
         return torch.sum(hidden_state_vector * energy, dim=2)
 
     def calculate_concat_score(
-        self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
-    ) -> Tensor:
+        self, hidden_state_vector: torch.Tensor, encoder_output_vector: torch.Tensor
+    ) -> torch.Tensor:
         """Reference: https://arxiv.org/pdf/1508.04025.pdf"""
         energy = self.attention(
             torch.cat(
@@ -52,23 +52,23 @@ class Attention(nn.Module):
         ).tanh()
         return torch.sum(self.parameter * energy, dim=2)
 
-    def forward_pass(
-        self, hidden_state_vector: Tensor, encoder_output_vector: Tensor
-    ) -> Tensor:
+    def forward(
+        self, hidden_state_vector: torch.Tensor, encoder_output_vector: torch.Tensor
+    ) -> torch.Tensor:
         """
         Calculate attention weights or energies
         and return the normalized probability distribution of the outputs (softmax).
         """
         if self.method == "general":
-            attention_weights = self.general_score(
+            attention_weights = self.calculate_general_score(
                 hidden_state_vector, encoder_output_vector
             )
         elif self.method == "concat":
-            attention_weights = self.concat_score(
+            attention_weights = self.calculate_concat_score(
                 hidden_state_vector, encoder_output_vector
             )
         elif self.method == "dot":
-            attention_weights = self.dot_score(
+            attention_weights = self.calculate_dot_score(
                 hidden_state_vector, encoder_output_vector
             )
 

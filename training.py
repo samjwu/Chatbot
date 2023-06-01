@@ -12,7 +12,10 @@ from vocabulary import Vocabulary
 
 
 def calculate_negative_log_likelihood_loss(
-    input_vector: torch.Tensor, target: torch.Tensor, mask: torch.Tensor
+    input_vector: torch.Tensor,
+    target: torch.Tensor,
+    mask: torch.Tensor,
+    device: torch.device,
 ) -> tuple[torch.Tensor, float]:
     """
     Calculate the average negative log likelihood
@@ -40,7 +43,9 @@ def train(
     decoder_optimizer: torch.optim.Optimizer,
     batch_size: int,
     clip_value: float,
-    max_length=10,
+    teacher_forcing_ratio: float,
+    device: torch.device,
+    max_length: int = 10,
 ) -> torch.Tensor:
     """
     Perform one training iteration.
@@ -61,7 +66,7 @@ def train(
     print_losses = []
     totals = 0
 
-    encoder_output_vector, encoder_hidden_state_vector = encoder.forward_pass(
+    encoder_output_vector, encoder_hidden_state_vector = encoder(
         input_variable, input_lengths
     )
 
@@ -81,8 +86,8 @@ def train(
     # make decoder do a forward pass over a batch of sequences one time step at a time
     if use_teacher_forcing:
         for t in range(max_target_len):
-            decoder_output_vector, decoder_hidden_state_vector = decoder.forward_pass(
-                decoder_input_vector, decoder_hidden_state_vector, encoder_outputs
+            decoder_output_vector, decoder_hidden_state_vector = decoder(
+                decoder_input_vector, decoder_hidden_state_vector, encoder_output_vector
             )
 
             # since teacher forcing is true, set next input to current target
@@ -90,7 +95,7 @@ def train(
 
             # calculate and accumulate loss
             mask_loss, total = calculate_negative_log_likelihood_loss(
-                decoder_output_vector, target_variable[t], mask[t]
+                decoder_output_vector, target_variable[t], mask[t], device
             )
             loss += mask_loss
             print_losses.append(mask_loss.item() * total)
@@ -98,7 +103,7 @@ def train(
     else:
         for t in range(max_target_len):
             decoder_output_vector, decoder_hidden_state_vector = decoder(
-                decoder_input_vector, decoder_hidden_state_vector, encoder_outputs
+                decoder_input_vector, decoder_hidden_state_vector, encoder_output_vector
             )
             # since teacher forcing is false, set next input to current output
             _, topi = decoder_output_vector.topk(1)
@@ -109,7 +114,7 @@ def train(
 
             # calculate and accumulate loss
             mask_loss, total = calculate_negative_log_likelihood_loss(
-                decoder_output_vector, target_variable[t], mask[t]
+                decoder_output_vector, target_variable[t], mask[t], device
             )
             loss += mask_loss
             print_losses.append(mask_loss.item() * total)
@@ -119,8 +124,8 @@ def train(
     loss.backward()
 
     # clip gradients for the encoder and decoder (gradients are modified in place)
-    nn.utils.clip_grad_norm_(encoder.parameters(), max_norm=clip_value)
-    nn.utils.clip_grad_norm_(decoder.parameters(), max_norm=clip_value)
+    torch.nn.utils.clip_grad_norm_(encoder.parameters(), max_norm=clip_value)
+    torch.nn.utils.clip_grad_norm_(decoder.parameters(), max_norm=clip_value)
 
     # update to adjust the model weights
     encoder_optimizer.step()
@@ -148,6 +153,8 @@ def train_num_iterations(
     clip_value: float,
     dataset_name: str,
     is_loaded_file: bool,
+    teacher_forcing_ratio: float,
+    device: torch.device,
 ):
     """Run a given number of training iterations."""
     # load training batches for each iteration
@@ -183,6 +190,8 @@ def train_num_iterations(
             decoder_optimizer,
             batch_size,
             clip_value,
+            teacher_forcing_ratio,
+            device,
         )
         print_loss += loss
 

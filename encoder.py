@@ -30,7 +30,7 @@ class Encoder(torch.nn.Module):
             bidirectional=True,
         )
 
-    def forward_pass(
+    def forward(
         self,
         input_sentence: torch.Tensor,
         input_lengths: torch.Tensor,
