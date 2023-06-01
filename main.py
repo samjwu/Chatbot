@@ -33,10 +33,6 @@ with open(processed_data_output, "w", encoding="utf-8") as output_file:
         writer.writerow(question_and_answer)
 
 vocab, questions_and_answers = processing.process_data(processed_data_output, dataset)
-print("Questions and Answers:")
-for question_and_answer in questions_and_answers[:10]:
-    print(question_and_answer)
-print("\n")
 questions_and_answers = processing.trim_words(vocab, questions_and_answers, 3)
 
 small_batch_size = 5
@@ -49,15 +45,10 @@ small_batch_size = 5
 ) = processing.convert_batch_to_training_data(
     vocab, [random.choice(question_and_answer) for _ in range(small_batch_size)]
 )
-print("input_variable:", input_variable)
-print("lengths:", lengths)
-print("output_variable:", output_variable)
-print("padding mask:", mask)
-print("max_target_len:", max_target_len)
 
 # model configurations
 model_name = "chatbot_model"
-attention_model = "dot"
+attention_model = "general"
 hidden_size = 500
 encoder_num_layers = 2
 decoder_num_layers = 2
@@ -65,7 +56,7 @@ dropout = 0.1
 batch_size = 64
 checkpoint = None
 checkpoint_name = None
-checkpoint_iterations = 40
+checkpoint_iterations = 4000
 save_directory = os.path.join("data", "save")
 
 checkpoint_name = os.path.join(
@@ -113,11 +104,11 @@ decoder = decoder.to(device)
 # training configurations
 learning_rate = 0.0001
 decoder_learning_ratio = 5.0
-num_iterations = 40
-print_iteration = 1
-save_iteration = 500
+num_iterations = 4000
+print_iteration = 10
+save_iteration = 1000
 clip_value = 50.0
-teacher_forcing_ratio = 1.0
+teacher_forcing_ratio = 0.6
 
 # set dropout layers in training mode
 encoder.train()

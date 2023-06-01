@@ -1,5 +1,9 @@
 # Chatbot
 
+A text-based AI that attempts to simulate human conversation.
+
+![Chatbot](chatbot.PNG)
+
 ## Requirements
 
 Download the dataset from http://zissou.infosci.cornell.edu/convokit/datasets/movie-corpus/movie-corpus.zip
