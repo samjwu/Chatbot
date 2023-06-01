@@ -1,5 +1,6 @@
 """Utility functions for training an attention model."""
 
+import os
 import random
 
 import torch
@@ -152,9 +153,10 @@ def train_num_iterations(
     save_iteration: int,
     clip_value: float,
     dataset_name: str,
-    is_loaded_file: bool,
+    checkpoint: any,
     teacher_forcing_ratio: float,
     device: torch.device,
+    hidden_size: int,
 ):
     """Run a given number of training iterations."""
     # load training batches for each iteration
@@ -165,13 +167,11 @@ def train_num_iterations(
         for _ in range(num_iterations)
     ]
 
-    print("Initializing...")
     start_iteration = 1
     print_loss = 0
-    if is_loaded_file:
+    if checkpoint is not None:
         start_iteration = checkpoint["iteration"] + 1
 
-    print("Training...")
     for iteration in range(start_iteration, num_iterations + 1):
         training_batch = training_batches[iteration - 1]
         input_variable, lengths, target_variable, mask, max_target_len = training_batch
@@ -198,7 +198,7 @@ def train_num_iterations(
         if iteration % print_iteration == 0:
             print_loss_avg = print_loss / print_iteration
             print(
-                "Iteration: {}; Percent complete: {:.1f}%; Average loss: {:.4f}".format(
+                "Iteration: {}; Completion: {:.1f}%; Average loss: {:.4f}".format(
                     iteration, iteration / num_iterations * 100, print_loss_avg
                 )
             )

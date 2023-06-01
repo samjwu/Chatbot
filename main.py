@@ -8,9 +8,11 @@ import torch.nn
 
 import processing
 import training
+import validating
 import vocabulary
 from decoder import Decoder
 from encoder import Encoder
+from greedy_search import GreedySearch
 from vocabulary import Vocabulary
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -61,8 +63,9 @@ encoder_num_layers = 2
 decoder_num_layers = 2
 dropout = 0.1
 batch_size = 64
+checkpoint = None
 checkpoint_name = None
-checkpoint_iterations = 4000
+checkpoint_iterations = 40
 save_directory = os.path.join("data", "save")
 
 checkpoint_name = os.path.join(
@@ -110,13 +113,13 @@ decoder = decoder.to(device)
 # training configurations
 learning_rate = 0.0001
 decoder_learning_ratio = 5.0
-num_iterations = 4000
+num_iterations = 40
 print_iteration = 1
 save_iteration = 500
 clip_value = 50.0
 teacher_forcing_ratio = 1.0
 
-# set dropout layers in train mode
+# set dropout layers in training mode
 encoder.train()
 decoder.train()
 
@@ -158,7 +161,17 @@ training.train_num_iterations(
     save_iteration,
     clip_value,
     dataset,
-    has_checkpoint,
+    checkpoint,
     teacher_forcing_ratio,
     device,
+    hidden_size,
 )
+
+# set dropout layers in validation mode
+encoder.eval()
+decoder.eval()
+
+searcher = GreedySearch(encoder, decoder, device)
+
+# run chatbot
+validating.validate_input(encoder, decoder, searcher, vocab, device)

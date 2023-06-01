@@ -12,27 +12,32 @@ from encoder import Encoder
 
 
 class GreedySearch(torch.nn.Module):
-    def __init__(self, encoder: Encoder, decoder: Decoder) -> None:
+    def __init__(
+        self, encoder: Encoder, decoder: Decoder, device: torch.device
+    ) -> None:
         super(GreedySearch, self).__init__()
 
         self.encoder = encoder
         self.decoder = decoder
+        self.device = device
 
     def forward(
-        self, input_sequence: Tensor, input_length: Tensor, max_length: int
-    ) -> tuple[Tensor, Tensor]:
+        self, input_sequence: torch.Tensor, input_length: torch.Tensor, max_length: int
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Perform multiple forward passes on a given input sequence using RNN decoder."""
         encoder_output_vector, encoder_hidden_state_vector = self.encoder(
             input_sequence, input_length
         )
 
         # initialize decoder's first input and output tensors
-        decoder_hidden_state_vector = encoder_hidden_state_vector[: decoder.num_layers]
+        decoder_hidden_state_vector = encoder_hidden_state_vector[
+            : self.decoder.num_layers
+        ]
         decoder_input_vector = (
-            torch.ones(1, 1, device=device, dtype=torch.long) * vocabulary.START
+            torch.ones(1, 1, device=self.device, dtype=torch.long) * vocabulary.START
         )
-        word_tokens = torch.zeros([0], device=device, dtype=torch.long)
-        softmax_scores = torch.zeros([0], device=device)
+        word_tokens = torch.zeros([0], device=self.device, dtype=torch.long)
+        softmax_scores = torch.zeros([0], device=self.device)
 
         # decode one word at a time
         for _ in range(max_length):

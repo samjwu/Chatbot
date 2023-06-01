@@ -15,6 +15,8 @@ If GPU is [CUDA-enabled](https://developer.nvidia.com/cuda-gpus), run the follow
 
 ## Usage
 
+Extract the dataset.
+
 To run the program, run the following command:
 
 `python main.py`

@@ -15,11 +15,12 @@ def validate_sentence(
     searcher: GreedySearch,
     vocab: Vocabulary,
     sentence: str,
+    device: torch.device,
     max_length: int = 10,
 ) -> list[str]:
     """Evaluate an input string/sentence and return a list/batch of decoded words."""
     # convert the sentence into its indices and get their lengths
-    indices_batch = [sentence_to_indices(vocab, sentence)]
+    indices_batch = [processing.sentence_to_indices(vocab, sentence)]
     lengths = torch.tensor([len(indices) for indices in indices_batch])
 
     # transpose dimensions of input batch to match the attention model's expectations
@@ -35,7 +36,11 @@ def validate_sentence(
 
 
 def validate_input(
-    encoder: Encoder, decoder: Decoder, searcher: GreedySearch, vocab: Vocabulary
+    encoder: Encoder,
+    decoder: Decoder,
+    searcher: GreedySearch,
+    vocab: Vocabulary,
+    device: torch.device,
 ) -> None:
     """Validate inputs from standard input."""
     input_sentence = ""
@@ -51,7 +56,7 @@ def validate_input(
             # process and validate input
             input_sentence = processing.normalize_str(input_sentence)
             output_words = validate_sentence(
-                encoder, decoder, searcher, vocab, sentence
+                encoder, decoder, searcher, vocab, input_sentence, device
             )
 
             # format and print output
